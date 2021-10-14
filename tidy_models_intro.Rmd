@@ -1,7 +1,7 @@
 ---
 title: "Intro to tidymodels"
-author: 'Author: Steve Pittard'
-date: 'Last update: 30 Aug 2021'
+author: 'Author: Steve Pittard wsp@emory.edu'
+date: 'Last update: 14 Oct 2021'
 output::html_notebook:
   toc: yes
   toc_depth: 3
@@ -173,16 +173,6 @@ legend("topright",
        pch=18,
        col=cols,title="Group")
 ```
-Check the data using a boxplot:
-
-```{r}
-boxplot(mass~diabetes,
-        data=pm,
-        horizontal = TRUE,
-        col="aquamarine",
-        main="Distribution of Mass per Group")
-grid()
-```
 
 ## Splitting Data For Model Building
 
@@ -230,17 +220,7 @@ It's helpful to know what this object contains. Many people do not bother to loo
 str(myglm)
 ```
 
-We can access this information by treating it like a list although there are functions such as **summary** that try to report back the more essential information. 
-
-```{r}
-summary(myglm)
-```
-
-```{r}
-#plot(myglm)
-```
-
-This will become more important soon but for now just observe that some of the features (e.g. age, insulin, triceps) do not appear to be important or significant though we'll ignore that for now - just like a lot of professional machine learning specialists do everyday (to their own peril). 
+For now just observe that some of the features (e.g. age, insulin, triceps) do not appear to be important or significant though we'll ignore that for now - just like a lot of professional machine learning specialists do everyday (to their own peril). 
 
 We could do some "feature filtering" or "engineering" to first transform or remove features to make the model diagnostics better but that's outside of the scope of this lecture.
 
@@ -852,8 +832,6 @@ pm_tidy_glm_fit %>%
   coord_equal() + 
   labs(title=paste("ROC Curve for glm with",round(pm_tidy_glm_roc_auc$.estimate,3),"AUC")) +
   theme_bw()
-
-
 ```
 
 ### Engine Selection
@@ -990,7 +968,7 @@ logistic_reg(mode = "classification") %>%
   set_engine("glm") %>%
   fit_resamples(diabetes ~ .,pm_folds) %>% 
   collect_metrics() %>% 
-  select(.metric,mean,n) 
+  select(.metric,mean,n)
 ```
 ## Workflows
 
@@ -1042,8 +1020,7 @@ And then predictions can be made:
 ```{r}
 predict(pm_workflow_fit,pm_testing) %>%
   bind_cols(new_data=pm_testing) %>%
-  conf_mat(truth=diabetes, estimate=.pred_class) %>%
-  summary()
+  my_metrics(truth=diabetes, estimate=.pred_class,event_level="second") 
 ```
 
 This could be done in one go if desired. Those facile with tidy commands might prefer this although you are encouraged to keep things simple if you wish. You can break up the pipeline into segments wherein you save information along the way. 
@@ -1195,7 +1172,7 @@ predict(pm_workflow_fit,pm_testing) %>%
 We could actually substitute a new model into the existing workflow. Let's define a new model which in this case uses a **randomForest** method. 
 
 ```{r}
-pm_tidy_rf <- rand_forest(mtry = 5, trees = 50) %>% 
+pm_tidy_rf <- rand_forest(mtry = 5, trees = 200) %>% 
   set_mode("classification") %>% 
   set_engine("randomForest")
 ```
@@ -1239,7 +1216,7 @@ man_tune <- pm_workflow %>%
   tune_grid(resamples = pm_folds,
             grid = expand.grid(
                   mtry = c(2,4,6),
-                  trees = c(20,40,60,80)
+                  trees = c(20,40,60)
             ))
 man_tune %>% collect_metrics()
 ```
