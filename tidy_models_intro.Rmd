@@ -71,6 +71,10 @@ A typical workflow in support of predictive modeling might look this:
 
 ![](./IMG/worfflow.png)
 
+Also see 
+
+https://raw.githubusercontent.com/dataprofessor/infographic/master/01-Building-the-Machine-Learning-Model.JPG
+
 **In-Sample vs Out-Of-Sample Error**
 
 The goal of predictive model is to generate models that can generalize to new data. It would be good if any model we generate could provide a good estimate of out of sample error. It’s easy to generate a model on an entire data set (in sample data) and then turn around and use that data for prediction. But how will it perform on new data ? Haven’t we just over trained our model ?
