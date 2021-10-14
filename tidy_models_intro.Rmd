@@ -789,7 +789,7 @@ pm_tidy_glm_fit %>%
   predict(pm_testing) %>%
   bind_cols(pm_testing) %>%
   conf_mat(truth=diabetes, estimate=.pred_class) %>% 
-  summary()
+  summary(event_level="second")
 ```
 Or you can specify just the ones you want without having to even generate the confusion matrix
 
@@ -1032,7 +1032,7 @@ workflow() %>%
   fit(data=pm_training) %>%
   predict(new_data=pm_testing) %>%
   bind_cols(pm_testing) %>%
-  my_metrics(truth=diabetes, estimate=.pred_class,even_level="second") 
+  my_metrics(truth=diabetes, estimate=.pred_class,event_level="second") 
 ```
 
 What else can we do with workflows ? What about cross validation ? Yes! Let's define everything from scratch which should serve as a review
