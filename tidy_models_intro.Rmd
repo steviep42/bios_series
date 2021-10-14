@@ -1154,6 +1154,11 @@ pm_workflow <- workflow() %>%
   add_model(pm_tidy_glm) 
 ```
 
+```{r}
+pm_workflow
+```
+
+
 Then we fit the workflow which brings it all together
 
 ```{r}
@@ -1209,6 +1214,8 @@ tune_spec <-
 
 ```
 
+
+So we update the workflow to yuse the tuning specification
 
 ```{r}
 man_tune <- pm_workflow %>% 
