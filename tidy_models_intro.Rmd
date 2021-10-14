@@ -362,6 +362,25 @@ proc <- pROC::roc(pm_testing$diabetes,probs)
 round(pROC::coords(proc, "b", ret="t", transpose = FALSE),2)
 ```
 
+Before we leave this example we could have also used the ROCR::performance function to help us answer this question (See https://www.thetopsites.net/article/50636333.shtml)
+
+```{r}
+plot(unlist(performance(pred, "sens")@x.values), 
+     unlist(performance(pred, "sens")@y.values), 
+     type="l", lwd=2, ylab="Sensitivity", xlab="Cutoff",
+     main="Optimal Cutoff To Balance Sens and Spec")
+
+par(new=TRUE)
+
+plot(unlist(performance(pred, "spec")@x.values), 
+     unlist(performance(pred, "spec")@y.values), 
+     type="l", lwd=2, col='red', ylab="", xlab="")
+axis(4, at=seq(0,1,0.2),labels=as.character(seq(0,1,0.2)))
+mtext("Specificity",side=4, padj=-2, col='red')
+grid()
+```
+
+
 We haven’t accomplished very much here because we need to look at multiple versions of the data in case we sampled a number of outliers in the creation of our training data. Or, maybe we have excluded a large number of outliers in the training set so they wound up in the test data set which means that the predictive power of our model isn’t as robust as it should be.
 
 Our next steps should involve creating multiple versions of the training and test pairs (say 3 times), compute the optimal AUC, and then look at how those values vary for each of those individual versions. If the AUCs vary widely then maybe our model is over training. If it’s not varying widely, it could be that that the model has high bias.
@@ -568,7 +587,9 @@ pm  %>% filter(diabetes == "pos" & mass < 20)
 We can conveniently sort data. In this case we filter out cars with MPG greater than 15 and a weight less than 2 tons and then arrange the result in order of highest MPG to lowest.
 
 ```{r}
-pm %>% filter(diabetes == "pos" & mass < 25) %>% arrange(desc(glucose))
+pm %>% 
+  filter(diabetes == "pos" & mass < 25) %>% 
+  arrange(desc(glucose))
 ```
 
 As applied to our above grouping example we could de-couple the somewhat verbose Base R command line:
@@ -621,7 +642,7 @@ The piping allows for free-form experimentation without the need for having to s
 ```{r}
 pm %>%
   ggplot(aes(x=mass,y=glucose,color=diabetes)) + 
-  geom_point() +
+  geom_point(alpha=0.5) +
   labs(
     title = "Glucose Level vs Mass",
     caption = "Data from the Pima Indians Data set.",
@@ -629,7 +650,7 @@ pm %>%
     x = "Mass in kg(height in m)^2",
     y = "Plasma glucose concentration",
     colour = "diabetes"
-  ) + theme_bw()
+  ) + theme_bw() + scale_color_brewer(palette="Dark2")
 ```
 
 
@@ -1307,4 +1328,58 @@ res %>%
   scale_x_log10(labels = scales::label_number()) +
   scale_color_viridis_d(option = "plasma", begin = .9, end = 0)
 ```
+
+## Workflow of Workflows
+
+We can create a set of workflows which in the tidymodels world are referred to as 
+**workflowsets**
+
+Let's continue our work with the Pima Indians dataset and compare models resulting from the implementation of three different methods. This is commonly done these days. First, we will create a single training and testing pair. 
+
+```{r}
+set.seed(1)
+split <- initial_split(pm)
+
+train_set <- training(split)
+test_set <- testing(split)
+```
+
+
+Let's pick methods other than logistic regression, Let's do a Decison Tree and a random forests
+
+
+```{r}
+# This uses the rpart package
+cart_spec <- 
+  decision_tree() %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+rf_spec <- rand_forest(trees = 100, mode = "classification") %>%
+  set_engine("ranger")
+```
+
+
+
+```{r}
+set.seed(2)
+train_resamples <- bootstraps(train_set)
+```
+
+
+```{r}
+all_workflows <- 
+  workflow_set(
+    preproc = list("formula" = diabetes ~ .),
+    models = list(cart = cart_spec, rf = rf_spec)
+  )
+all_workflows
+```
+
+```{r}
+all_workflows <- 
+  all_workflows %>% 
+  workflow_map(resamples = train_resamples, verbose = TRUE)
+```
+
 
