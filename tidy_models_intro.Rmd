@@ -1247,7 +1247,7 @@ man_tune %>% show_best()
 ```{r}
 man_final <- finalize_workflow(pm_workflow,
                                select_best(man_tune,metric="roc_auc")) %>% 
-  fit(pm_training_baked)
+             fit(pm_training_baked)
 
 man_final
 ```
@@ -1262,7 +1262,7 @@ tune_spec <-
 
 # Setup a tuning grid which contains candidate values for the above hyperparameters
 tree_grid <- grid_regular(cost_complexity(),tree_depth(),
-                          levels = 10)
+                          levels = 5)
 
 tree_grid
 ```
