@@ -4,10 +4,15 @@
 %
 \documentclass[
 ]{article}
+\title{Intro to tidymodels}
+\author{Author: Steve Pittard
+\href{mailto:wsp@emory.edu}{\nolinkurl{wsp@emory.edu}}}
+\date{Last update: 14 Oct 2021}
+
 \usepackage{amsmath,amssymb}
 \usepackage{lmodern}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+\usepackage{iftex}
+\ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
@@ -109,20 +114,15 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\ifluatex
+\ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-
-\title{Intro to tidymodels}
-\author{Author: Steve Pittard
-\href{mailto:wsp@emory.edu}{\nolinkurl{wsp@emory.edu}}}
-\date{Last update: 14 Oct 2021}
 
 \begin{document}
 \maketitle
 
 Note you may use this in your work as long as it's not part of a
-commerical project. Any use should cite this notebook and author
+commercial project. Any use should cite this notebook and author
 accordingly.
 
 \begin{Shaded}
@@ -168,7 +168,7 @@ that AI has been around for quite some time. The Wikipedia definition of
 AI is:
 
 \begin{verbatim}
-The study of “intelligent agents”: any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals
+The study of "intelligent agents": any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals
 \end{verbatim}
 
 I found the following image on Intel web page but can't remember where
@@ -211,7 +211,26 @@ Will a customer change Internet Service Providers ?
 
 A typical workflow in support of predictive modeling might look this:
 
-\includegraphics{./IMG/worfflow.png}
+\includegraphics{./IMG/worfflow.png} \#\#\# Types of Models
+
+I'm grossly simplifying things here by jumping straight to predictive
+modeling as if that is the only type of model that matters when it is
+just one approach to understanding data. We could spend lots of time
+doing exploratory data analysis which is frequently done as part of, or
+before predictive modeling, since we might want to first understand
+possible relationships in our data.
+
+Or we could treat it as an inferential problem wherein we make
+assumptions about the data and treat it like a statistical hypothesis
+wherein we implement statistical tests to determine effectiveness say
+relative to coefficients in a regression. We could have a very
+statistically rigorous model whose predictive power on new data might
+not be ``good''. We could also have a model whose predictive power on
+new data is ``good'' but not so statistically. This can be a trade off.
+I'm not going to spend a lot of time here comparing the two approaches
+but they each have their own considerations.
+
+\url{https://raw.githubusercontent.com/dataprofessor/infographic/master/01-Building-the-Machine-Learning-Model.JPG}
 
 \textbf{In-Sample vs Out-Of-Sample Error}
 
@@ -241,10 +260,10 @@ represents a vector of the observed (true) values.
 \subsection{The ``Old Way'' - Using Base R and
 addons}\label{the-old-way---using-base-r-and-addons}}
 
-While 'old" sounds somewhat negative, there is absolutely nothing wrong
-using an established approach to model data using Base R. This involves
-applying specific packages to build, for example, a logistic regression
-model, a decision tree, or a support vector machine.
+While \textbf{old} sounds somewhat negative, there is absolutely nothing
+wrong using an established approach to model data using Base R. This
+involves applying specific packages to build, for example, a logistic
+regression model, a decision tree, or a support vector machine.
 
 The job involves identifying the appropriate package(s) and then
 dividing the data up in to training and testing pairs after which a
@@ -274,10 +293,8 @@ you look at the result
 \subsubsection{An Example}\label{an-example}}
 
 Let's run through an example using the infamous \textbf{Pima Indians}
-dataset to predict whether a car has an automatic transmission (0) or a
-manual transmission (1). First, let's chop up the data into a training
-and test pair. To get the ball rolling with a practical case, let's
-consider the Pima Indians Data Frame. Read in a copy.
+data set to predict whether someone is diabetic or not. First, let's
+chop up the data into a training and test pair. Read in a copy.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -384,10 +401,10 @@ to mind (or not):
 Building}\label{splitting-data-for-model-building}}
 
 At this point we want to build a model to predict whether a given
-observation will be positive for diabetes (or negative).
+observation will be positive for diabetes or negative.
 
 What we will do is create a training and testing data set using the
-\textbf{sample} function. Here we will carve out rouhgly 80\% of the
+\textbf{sample} function. Here we will carve out roughly 80\% of the
 data for training and 20\% for testing.
 
 \includegraphics{./IMG/split.png}
@@ -466,7 +483,8 @@ Now, we create the train/test pair:
 Let's build a model using the Generalized Linear Models function. Note
 that there are other types of functions we could use but most people
 have at least heard of Logistic Regression so let's start with that as
-it also provides us the opporunity to understand some basic ML concepts.
+it also provides us the opportunity to understand some basic ML
+concepts.
 
 The \textbf{glm} function is part of Base R so you don't need to load
 any additional packages to use it. We need to specify a formula, some
@@ -714,7 +732,7 @@ more or less matches the logit function above:
 \includegraphics{./IMG/c1.png}
 
 Note that this is a rare situation wherein there exists a clean
-separation between negative and positive cases. We could more lukely
+separation between negative and positive cases. We could more likely
 have something like this:
 
 \includegraphics{./IMG/c3.png}
@@ -994,6 +1012,30 @@ completeness we could use another R function to nail this down:
 ## 1      0.36
 \end{verbatim}
 
+Before we leave this example we could have also used the
+ROCR::performance function to help us answer this question (See
+\url{https://www.thetopsites.net/article/50636333.shtml})
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{unlist}\NormalTok{(ROCR}\SpecialCharTok{::}\FunctionTok{performance}\NormalTok{(pred, }\StringTok{"sens"}\NormalTok{)}\SpecialCharTok{@}\NormalTok{x.values), }
+     \FunctionTok{unlist}\NormalTok{(ROCR}\SpecialCharTok{::}\FunctionTok{performance}\NormalTok{(pred, }\StringTok{"sens"}\NormalTok{)}\SpecialCharTok{@}\NormalTok{y.values), }
+     \AttributeTok{type=}\StringTok{"l"}\NormalTok{, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Sensitivity"}\NormalTok{, }\AttributeTok{xlab=}\StringTok{"Cutoff"}\NormalTok{,}
+     \AttributeTok{main=}\StringTok{"Optimal Cutoff To Balance Sens and Spec"}\NormalTok{)}
+
+\FunctionTok{par}\NormalTok{(}\AttributeTok{new=}\ConstantTok{TRUE}\NormalTok{)}
+
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{unlist}\NormalTok{(ROCR}\SpecialCharTok{::}\FunctionTok{performance}\NormalTok{(pred, }\StringTok{"spec"}\NormalTok{)}\SpecialCharTok{@}\NormalTok{x.values), }
+     \FunctionTok{unlist}\NormalTok{(ROCR}\SpecialCharTok{::}\FunctionTok{performance}\NormalTok{(pred, }\StringTok{"spec"}\NormalTok{)}\SpecialCharTok{@}\NormalTok{y.values), }
+     \AttributeTok{type=}\StringTok{"l"}\NormalTok{, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{\textquotesingle{}red\textquotesingle{}}\NormalTok{, }\AttributeTok{ylab=}\StringTok{""}\NormalTok{, }\AttributeTok{xlab=}\StringTok{""}\NormalTok{)}
+\FunctionTok{axis}\NormalTok{(}\DecValTok{4}\NormalTok{, }\AttributeTok{at=}\FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{,}\FloatTok{0.2}\NormalTok{),}\AttributeTok{labels=}\FunctionTok{as.character}\NormalTok{(}\FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{,}\FloatTok{0.2}\NormalTok{)))}
+\FunctionTok{mtext}\NormalTok{(}\StringTok{"Specificity"}\NormalTok{,}\AttributeTok{side=}\DecValTok{4}\NormalTok{, }\AttributeTok{padj=}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{\textquotesingle{}red\textquotesingle{}}\NormalTok{)}
+\FunctionTok{grid}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-21-1.pdf}
+
 We haven't accomplished very much here because we need to look at
 multiple versions of the data in case we sampled a number of outliers in
 the creation of our training data. Or, maybe we have excluded a large
@@ -1056,8 +1098,8 @@ a realistic idea as to how it might perform on unseen data.
 
 The method works by giving us multiple estimates of out-of-sample error,
 rather than a single estimate. Let's assume K is equal to 3 so we will
-partition our data into 3 individual ``folds''" which are basically
-equal in size. Then we'll create a loop that does the following:
+partition our data into 3 individual ``folds'' which are basically equal
+in size. Then we'll create a loop that does the following:
 
 \begin{verbatim}
 Combines 2 of the folds into a training data set
@@ -1157,7 +1199,7 @@ at accuracy across 8 folds:
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-22-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-23-1.pdf}
 
 We can even replicate this to approximate something known as repeated
 cross validation:
@@ -1179,7 +1221,7 @@ cross validation:
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-23-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-24-1.pdf}
 
 \hypertarget{summary}{%
 \subsection{Summary}\label{summary}}
@@ -1381,7 +1423,9 @@ result in order of highest MPG to lowest.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{pm }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{filter}\NormalTok{(diabetes }\SpecialCharTok{==} \StringTok{"pos"} \SpecialCharTok{\&}\NormalTok{ mass }\SpecialCharTok{\textless{}} \DecValTok{25}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{arrange}\NormalTok{(}\FunctionTok{desc}\NormalTok{(glucose))}
+\NormalTok{pm }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(diabetes }\SpecialCharTok{==} \StringTok{"pos"} \SpecialCharTok{\&}\NormalTok{ mass }\SpecialCharTok{\textless{}} \DecValTok{25}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{arrange}\NormalTok{(}\FunctionTok{desc}\NormalTok{(glucose))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1472,7 +1516,7 @@ of data frame but that's getting off track a little bit.
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-32-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-33-1.pdf}
 
 If we wanted to improve upon this we could, perhaps by making the
 transmission type into a factor with more intuitive labels. Here we will
@@ -1493,7 +1537,7 @@ introduce another \textbf{tidyverse} function to \textbf{mutate} the
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-33-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-34-1.pdf}
 
 A distinct advantage of this approach is that we did not change in
 anyway the original data frame. Check it out:
@@ -1523,7 +1567,7 @@ example:
 \begin{Highlighting}[]
 \NormalTok{pm }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{mass,}\AttributeTok{y=}\NormalTok{glucose,}\AttributeTok{color=}\NormalTok{diabetes)) }\SpecialCharTok{+} 
-  \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha=}\FloatTok{0.5}\NormalTok{) }\SpecialCharTok{+}
   \FunctionTok{labs}\NormalTok{(}
     \AttributeTok{title =} \StringTok{"Glucose Level vs Mass"}\NormalTok{,}
     \AttributeTok{caption =} \StringTok{"Data from the Pima Indians Data set."}\NormalTok{,}
@@ -1531,11 +1575,11 @@ example:
     \AttributeTok{x =} \StringTok{"Mass in kg(height in m)\^{}2"}\NormalTok{,}
     \AttributeTok{y =} \StringTok{"Plasma glucose concentration"}\NormalTok{,}
     \AttributeTok{colour =} \StringTok{"diabetes"}
-\NormalTok{  ) }\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{()}
+\NormalTok{  ) }\SpecialCharTok{+} \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{scale\_color\_brewer}\NormalTok{(}\AttributeTok{palette=}\StringTok{"Dark2"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-35-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-36-1.pdf}
 
 \hypertarget{broom---sweeping-things-up}{%
 \subsubsection{Broom - sweeping things
@@ -1685,7 +1729,7 @@ from being overwritten.''
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-43-1.pdf}
+\includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-44-1.pdf}
 
 \hypertarget{tidymodels}{%
 \subsection{Tidymodels}\label{tidymodels}}
@@ -1704,6 +1748,9 @@ that many methods will convert the target variable to a label / nominal
 feature without you asking it to. This is a convenience though the
 tidyverse generally wants you do be explicit about this.
 
+\hypertarget{read-in-the-data}{%
+\subsubsection{Read in the data}\label{read-in-the-data}}
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{url }\OtherTok{\textless{}{-}} \StringTok{"https://raw.githubusercontent.com/steviep42/bios534\_spring\_2020/master/data/pima.csv"}
@@ -1717,12 +1764,6 @@ tidyverse generally wants you do be explicit about this.
 \begin{longtable}[]{@{}ll@{}}
 \caption{Data summary}\tabularnewline
 \toprule
-& \\
-\midrule
-\endfirsthead
-\toprule
-& \\
-\midrule
 \endhead
 Name & pm \\
 Number of rows & 768 \\
@@ -1796,6 +1837,9 @@ leverage that information.
 \end{Highlighting}
 \end{Shaded}
 
+We can print out the contents of this object just by typing it although
+there isn't much happening right now.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{pm\_tidy\_glm}
@@ -1826,6 +1870,12 @@ Tp get more info:
 ##     family = stats::binomial)
 \end{verbatim}
 
+\hypertarget{fitting-the-model}{%
+\subsubsection{Fitting the Model}\label{fitting-the-model}}
+
+So now we can fit the model as part of the pipeline. Notice how
+tidymodels is designed to be totally congruent with the tidyverse.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{pm\_tidy\_glm\_fit }\OtherTok{\textless{}{-}} \FunctionTok{logistic\_reg}\NormalTok{(}\AttributeTok{mode =} \StringTok{"classification"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
@@ -1834,7 +1884,12 @@ Tp get more info:
 \end{Highlighting}
 \end{Shaded}
 
-What do we get back?
+So we get back a \textbf{parsnip} object which, using the copy from the
+\textbf{parsnip} package documentation is:
+
+``The goal of \textbf{parsnip} is to provide a tidy, unified interface
+to models that can be used to try a range of models without getting
+bogged down in the syntactical minutiae of the underlying packages''.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1845,7 +1900,6 @@ What do we get back?
 \begin{verbatim}
 ## parsnip model object
 ## 
-## Fit time:  4ms 
 ## 
 ## Call:  stats::glm(formula = diabetes ~ ., family = stats::binomial, 
 ##     data = data)
@@ -1861,11 +1915,15 @@ What do we get back?
 ## Residual Deviance: 509.8     AIC: 527.8
 \end{verbatim}
 
-In terms of making a prediction, we can do that easily. The
-\textbf{predict} function is what we call a generic function in R which
-understands how to do its work based on the type of object and data that
-it is being given. Remember that we built a model which returned an
-object. We can pass that to the \textbf{predict} function:
+So this is where we could drop down into an inferential way of thinking
+and figure out if the coefficients in the model are statistically
+meaningful. But we'll skip over that for now.
+
+In terms of making a prediction, the \textbf{predict} function is what
+we call a generic function in R which understands how to do its work
+based on the type of object and data that it is being given. Remember
+that we built a model which returned an object. We can pass that to the
+\textbf{predict} function:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1880,9 +1938,13 @@ object. We can pass that to the \textbf{predict} function:
 ## 1          694.     536  -255.  528.  566.     510.         528   537
 \end{verbatim}
 
+Make the actual prediction on the testing data. We also pass in the
+\textbf{type == ``class''} argument since are dealing with
+classification and, in this case, wish to get labels back.
+
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Use the ranger model to make a prediction}
+\CommentTok{\# Get predicted labels back}
 \NormalTok{test\_preds }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(pm\_tidy\_glm\_fit,pm\_testing,}\AttributeTok{type=}\StringTok{"class"}\NormalTok{)}
 \NormalTok{test\_preds[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{,]}
 \end{Highlighting}
@@ -1904,32 +1966,8 @@ object. We can pass that to the \textbf{predict} function:
 ## 10 neg
 \end{verbatim}
 
-Note that we also have access to probabilities which could be useful if
-we needed to generate a ROC curve or wanted to take finer grained
-control over thresholds.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{predict}\NormalTok{(pm\_tidy\_glm\_fit,}
-\NormalTok{        pm\_testing,}\AttributeTok{type=}\StringTok{"prob"}\NormalTok{)[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{,]}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## # A tibble: 10 x 2
-##    .pred_neg .pred_pos
-##        <dbl>     <dbl>
-##  1     0.272    0.728 
-##  2     0.227    0.773 
-##  3     0.956    0.0443
-##  4     0.289    0.711 
-##  5     0.386    0.614 
-##  6     0.624    0.376 
-##  7     0.813    0.187 
-##  8     0.700    0.300 
-##  9     0.267    0.733 
-## 10     0.956    0.0436
-\end{verbatim}
+\hypertarget{managing-predictions}{%
+\subsubsection{Managing Predictions}\label{managing-predictions}}
 
 By default we get back some predictions as to whether a subject is
 positive or negative for diabetes which we could then compare to the
@@ -1985,16 +2023,16 @@ resulting from the model:
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.792
-## 2 sens      binary         0.556
-## 3 spec      binary         0.92 
-## 4 precision binary         0.789
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.792
+## 2 sensitivity binary         0.556
+## 3 specificity binary         0.92 
+## 4 precision   binary         0.789
 \end{verbatim}
 
-So we could derive all the metrics directly from the confusion matrix -
-if we wanted to
+We could also derive all the metrics directly from the confusion matrix
+- if we wanted to
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2060,17 +2098,67 @@ generate the confusion matrix
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.792
-## 2 sens      binary         0.556
-## 3 spec      binary         0.92 
-## 4 precision binary         0.789
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.792
+## 2 sensitivity binary         0.556
+## 3 specificity binary         0.92 
+## 4 precision   binary         0.789
 \end{verbatim}
+
+The flexibility of tidymodels can be confusing although if you first
+determine what your metric(s) for success will be BEFORE building a
+model then the job becomes easier.
+
+\hypertarget{roc-curves}{%
+\subsubsection{ROC Curves}\label{roc-curves}}
 
 And what about drawing ROC curves? The tidymodels package has that
 covered. We just have to remember to get the probabilities associated
-with the prediction instead of the labels.
+with the prediction instead of the labels. Getting the probabilities is
+as easy as providing the keyword ``probabilities: to the''type''
+argument.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pm\_tidy\_glm\_fit }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{predict}\NormalTok{(pm\_testing,}\AttributeTok{type=}\StringTok{"prob"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 231 x 2
+##    .pred_neg .pred_pos
+##        <dbl>     <dbl>
+##  1     0.272    0.728 
+##  2     0.227    0.773 
+##  3     0.956    0.0443
+##  4     0.289    0.711 
+##  5     0.386    0.614 
+##  6     0.624    0.376 
+##  7     0.813    0.187 
+##  8     0.700    0.300 
+##  9     0.267    0.733 
+## 10     0.956    0.0436
+## # ... with 221 more rows
+\end{verbatim}
+
+Using this information we can now:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi})}
+\tightlist
+\item
+  Predict using probabilities using the test data
+\item
+  Binding that info to the test data
+\item
+  Passing \#2 into the \textbf{roc\_curve} function (specify the correct
+  ``event level'')
+\item
+  Pass \#3 into the \textbf{autoplot} function which figures out the
+  appropriate graph
+\end{enumerate}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2083,19 +2171,22 @@ with the prediction instead of the labels.
 \end{Shaded}
 
 \includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-58-1.pdf}
+
 We can improve upon the default plot. First, we'll get the auc value to
 use in our labels. Then we'll use this information along with various
 ggplot functions.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Get the AUC}
+\CommentTok{\# Get the AUC by using the **roc\_auc** function}
 \NormalTok{pm\_tidy\_glm\_roc\_auc }\OtherTok{\textless{}{-}}\NormalTok{ pm\_tidy\_glm\_fit }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{predict}\NormalTok{(pm\_testing,}\AttributeTok{type=}\StringTok{"prob"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{bind\_cols}\NormalTok{(pm\_testing) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{roc\_auc}\NormalTok{(}\AttributeTok{truth=}\NormalTok{diabetes,}\AttributeTok{estimate=}\NormalTok{.pred\_pos,}\AttributeTok{event\_level=}\StringTok{"second"}\NormalTok{)}
 
-\CommentTok{\# Put up an annotated plot}
+\CommentTok{\# Put up an annotated plot using ggplot directly for more flexibility}
+\CommentTok{\# in labeling}
+
 \NormalTok{pm\_tidy\_glm\_fit }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{predict}\NormalTok{(pm\_testing,}\AttributeTok{type=}\StringTok{"prob"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{bind\_cols}\NormalTok{(pm\_testing) }\SpecialCharTok{\%\textgreater{}\%}
@@ -2115,8 +2206,8 @@ ggplot functions.
 \subsubsection{Engine Selection}\label{engine-selection}}
 
 Let's take a step back into the definition of the model to learn a
-little more about what is happening at a basic level. So we wanted to do
-logistic regression wich can be done as follows:
+little more about what is happening at a basic level. So remember that
+we wanted to do logistic regression which can be done as follows:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2145,7 +2236,7 @@ to different underlying regression methods including the following:
 \end{Shaded}
 
 \begin{verbatim}
-## # A tibble: 6 x 2
+## # A tibble: 7 x 2
 ##   engine    mode          
 ##   <chr>     <chr>         
 ## 1 glm       classification
@@ -2154,6 +2245,7 @@ to different underlying regression methods including the following:
 ## 4 spark     classification
 ## 5 keras     classification
 ## 6 stan      classification
+## 7 brulee    classification
 \end{verbatim}
 
 We can choose a different underlying method if we so desire:
@@ -2229,12 +2321,12 @@ of the model from the prediction phase (unless we want to).
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.766
-## 2 sens      binary         0.617
-## 3 spec      binary         0.847
-## 4 precision binary         0.685
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.766
+## 2 sensitivity binary         0.617
+## 3 specificity binary         0.847
+## 4 precision   binary         0.685
 \end{verbatim}
 
 \hypertarget{data-management}{%
@@ -2258,7 +2350,7 @@ function.
 \end{Shaded}
 
 \begin{verbatim}
-## <Analysis/Assess/Total>
+## <Training/Testing/Total>
 ## <537/231/768>
 \end{verbatim}
 
@@ -2313,7 +2405,7 @@ The following will get the test data
 
 Let's repeat our glm model on the new training data. We don't expect
 much difference. This is just illustrating how we can take advantage of
-\textbf{tidymodels} functions to help us.
+\textbf{tidymodels} data splitting functions to help us.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2410,7 +2502,13 @@ So what does this structure look like?
 
 Let's repeat our exercise with fitting a model using the folds. While we
 are at it, we will collect the mean accuracy and roc\_auc for this
-experiment.
+experiment. Understand that we are computing an average accuracy and AUC
+across the folds. Remember that in cross fold validation we are chopping
+up the training data into some number of folds - in this case 6. So each
+time we wish to build and evaluate a model, one of the six folds is held
+out as testing data while the remaining 5 are used to train the data.
+It's like a for loop although we don't have to program that ourselves
+like we did previously.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2433,8 +2531,8 @@ experiment.
 \hypertarget{workflows}{%
 \subsection{Workflows}\label{workflows}}
 
-Workflows allow us to consolidate a number of steps into a definition.
-From the manual:
+It is possible to organize a number of steps into a workflow as a form
+of abstraction. From the manual:
 
 A workflow is an object that can bundle together your pre-processing,
 modeling, and post-processing requests. For example, if you have a
@@ -2447,7 +2545,8 @@ You don’t have to keep track of separate objects in your workspace.
 The recipe prepping and model fitting can be executed using a single call to fit().
 \end{verbatim}
 
-Lets define a model as before
+So lets define a model as before. You've seen this before so this should
+not be new to you.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2457,7 +2556,8 @@ Lets define a model as before
 \end{Shaded}
 
 Next we will create a workflow to contain it. We can also add in other
-things than just models but let's keep it simple for now.
+things than just models but let's keep it simple for now. Here we will
+add a formula and a model into a workflow.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2490,10 +2590,11 @@ Check it out:
 \end{verbatim}
 
 Before we do anything with it, I wanted to point out that you could
-update specific components of an existing wrokflow. This is helpful if
-our workflow defintition has lots of individual components to it. In
-this case we do not have that many but this is a good time to point out
-the advantage of being able to update a workflow.
+update specific components of an existing workflow. This is helpful if
+our workflow definition has lots of individual components to it. In this
+case we do not have that many but this is a good time to point out the
+advantage of being able to perform an update. So let's change the
+existing formula to something new.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2535,18 +2636,20 @@ And then predictions can be made:
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.792
-## 2 sens      binary         0.556
-## 3 spec      binary         0.92 
-## 4 precision binary         0.789
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.792
+## 2 sensitivity binary         0.556
+## 3 specificity binary         0.92 
+## 4 precision   binary         0.789
 \end{verbatim}
 
 This could be done in one go if desired. Those facile with tidy commands
-might prefer this although you are encouraged to keep things simple if
-you wish. You can break up the pipeline into segments wherein you save
-information along the way.
+might prefer this although you are encouraged to keep things simple and
+readable. You can break up the pipeline into segments wherein you save
+information along the way if you want others to be able to easily follow
+your steps. This is up to you but sometimes having long pipelines can be
+hard to follow.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2562,12 +2665,12 @@ information along the way.
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.792
-## 2 sens      binary         0.556
-## 3 spec      binary         0.92 
-## 4 precision binary         0.789
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.792
+## 2 sensitivity binary         0.556
+## 3 specificity binary         0.92 
+## 4 precision   binary         0.789
 \end{verbatim}
 
 What else can we do with workflows ? What about cross validation ? Yes!
@@ -2588,7 +2691,7 @@ Let's define everything from scratch which should serve as a review
 
 So if we wanted to train the model on a set of folds how would we do
 that? Where would we specify it in the workflow? First, we can create
-the folds using the following:
+the folds using the following. You've seen this before.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2629,12 +2732,12 @@ What do we get for our trouble ?
 
 \begin{verbatim}
 ## # A tibble: 4 x 6
-##   .metric   .estimator  mean     n std_err .config             
-##   <chr>     <chr>      <dbl> <int>   <dbl> <chr>               
-## 1 accuracy  binary     0.763     6  0.0199 Preprocessor1_Model1
-## 2 precision binary     0.707     6  0.0261 Preprocessor1_Model1
-## 3 sens      binary     0.559     6  0.0319 Preprocessor1_Model1
-## 4 spec      binary     0.877     6  0.0114 Preprocessor1_Model1
+##   .metric     .estimator  mean     n std_err .config             
+##   <chr>       <chr>      <dbl> <int>   <dbl> <chr>               
+## 1 accuracy    binary     0.763     6  0.0199 Preprocessor1_Model1
+## 2 precision   binary     0.707     6  0.0261 Preprocessor1_Model1
+## 3 sensitivity binary     0.559     6  0.0319 Preprocessor1_Model1
+## 4 specificity binary     0.877     6  0.0114 Preprocessor1_Model1
 \end{verbatim}
 
 We see the average metric values across all folds which in this case are
@@ -2661,7 +2764,7 @@ The way this works is that we:
 \item
   Prep the recipe
 \item
-  Bake the prepped reciple using some data
+  Bake the prepped recipe using some data
 \end{enumerate}
 
 There are two different types of operations that can be sequentially
@@ -2718,7 +2821,7 @@ processing options which are possible.
 \end{Shaded}
 
 \begin{verbatim}
-## Data Recipe
+## Recipe
 ## 
 ## Inputs:
 ## 
@@ -2730,12 +2833,12 @@ processing options which are possible.
 ## 
 ## Operations:
 ## 
-## Centering for pregnant, glucose, pressure, triceps, ... [trained]
-## Scaling for pregnant, glucose, pressure, triceps, ... [trained]
+## Centering for pregnant, glucose, pressure, triceps, insulin, ... [trained]
+## Scaling for pregnant, glucose, pressure, triceps, insulin, ... [trained]
 \end{verbatim}
 
 But the recipe itself is just that - a document of intention for
-something to be prepped (which we just do) and later ``baked'' into
+something to be prepped (which we just did) and later ``bake'' into
 usable data.
 
 \begin{Shaded}
@@ -2763,7 +2866,7 @@ usable data.
 
 Similarly, if we want the testing data to have the same pre-processing
 we need to bake it using the prepped recipe. Note that the scaling is
-determined by the training to avoid data leakage when the
+determined by the training to avoid data leakage.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2798,7 +2901,7 @@ minus the prep and a formula definition.
 First, here is our recipe. We are just scratching the surface here. We
 could also do things like removing highly correlated variables and/or
 reduce the dimensionality of the data via PCA using \textbf{step}
-functions. For purposes of explanation, we will keep it simple and hust
+functions. For purposes of explanation, we will keep it simple and just
 do the centering and scaling.
 
 \begin{Shaded}
@@ -2874,12 +2977,12 @@ Make predictions:
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.792
-## 2 sens      binary         0.556
-## 3 spec      binary         0.92 
-## 4 precision binary         0.789
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.792
+## 2 sensitivity binary         0.556
+## 3 specificity binary         0.92 
+## 4 precision   binary         0.789
 \end{verbatim}
 
 We could actually substitute a new model into the existing workflow.
@@ -2894,9 +2997,9 @@ method.
 \end{Highlighting}
 \end{Shaded}
 
-Now we can update the workflow with a new model and complete the fit and
-predict in one go. This example is a little small but imagine if our
-workflow had lengthy recipe and model definitions. We don't have to
+Now we can update the workflow with the new model and complete the fit
+and predict in one go. This example is a little small but imagine if our
+workflow had a lengthy recipe and model definitions. We don't have to
 redefine it, we just update an existing one.
 
 \begin{Shaded}
@@ -2912,12 +3015,12 @@ redefine it, we just update an existing one.
 
 \begin{verbatim}
 ## # A tibble: 4 x 3
-##   .metric   .estimator .estimate
-##   <chr>     <chr>          <dbl>
-## 1 accuracy  binary         0.766
-## 2 sens      binary         0.593
-## 3 spec      binary         0.86 
-## 4 precision binary         0.696
+##   .metric     .estimator .estimate
+##   <chr>       <chr>          <dbl>
+## 1 accuracy    binary         0.766
+## 2 sensitivity binary         0.593
+## 3 specificity binary         0.86 
+## 4 precision   binary         0.696
 \end{verbatim}
 
 \hypertarget{tuning-and-optimizing}{%
@@ -2936,8 +3039,8 @@ method is implemented. In fact, the model can be repeated using
 different values of the number of desired trees, to see if an optimal
 result can be achieved.
 
-We call this (hyper)parameter tuning which is soemthing that tidymodels
-will do for us. In effect we are optimizing a desginated performance
+We call this (hyper)parameter tuning which is something that tidymodels
+will do for us. In effect we are optimizing a designated performance
 metric (e.g.~accuracy, precision, recall) using parameters. Random
 Forests have other hyperparameters which could also be set such as the
 minimum number of cases that must reside in a node. Hyperparameters can
@@ -2957,7 +3060,7 @@ wish to tune as part of our fit process.
 \end{Highlighting}
 \end{Shaded}
 
-So we update the workflow to yuse the tuning specification
+So we update the workflow to use the tuning specification
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3072,7 +3175,7 @@ So we update the workflow to yuse the tuning specification
 
 We could set up a more extensive grid that automatically generates
 values according to a regular pattern. This will consume more CPU time
-but it could investiage a larger parameter space.
+but it could investigate a larger parameter space.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3168,5 +3271,100 @@ workflow to use the new tuning specification:
 \end{Shaded}
 
 \includegraphics{tidy_models_intro_files/figure-latex/unnamed-chunk-106-1.pdf}
+
+\hypertarget{workflow-of-workflows}{%
+\subsection{Workflow of Workflows}\label{workflow-of-workflows}}
+
+We can create a set of workflows which in the tidymodels world are
+referred to as \textbf{workflowsets}
+
+Let's continue our work with the Pima Indians dataset and compare models
+resulting from the implementation of three different methods. This is
+commonly done these days. First, we will create a single training and
+testing pair.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\NormalTok{split }\OtherTok{\textless{}{-}} \FunctionTok{initial\_split}\NormalTok{(pm)}
+
+\NormalTok{train\_set }\OtherTok{\textless{}{-}} \FunctionTok{training}\NormalTok{(split)}
+\NormalTok{test\_set }\OtherTok{\textless{}{-}} \FunctionTok{testing}\NormalTok{(split)}
+\end{Highlighting}
+\end{Shaded}
+
+Let's pick methods other than logistic regression, Let's do a Decision
+Tree and a random forests
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# This uses the rpart package}
+\NormalTok{cart\_spec }\OtherTok{\textless{}{-}} 
+  \FunctionTok{decision\_tree}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{set\_engine}\NormalTok{(}\StringTok{"rpart"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{set\_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{)}
+
+\NormalTok{rf\_spec }\OtherTok{\textless{}{-}} \FunctionTok{rand\_forest}\NormalTok{(}\AttributeTok{trees =} \DecValTok{100}\NormalTok{, }\AttributeTok{mode =} \StringTok{"classification"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{set\_engine}\NormalTok{(}\StringTok{"ranger"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2}\NormalTok{)}
+\NormalTok{train\_resamples }\OtherTok{\textless{}{-}} \FunctionTok{bootstraps}\NormalTok{(train\_set)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{all\_workflows }\OtherTok{\textless{}{-}} 
+  \FunctionTok{workflow\_set}\NormalTok{(}
+    \AttributeTok{preproc =} \FunctionTok{list}\NormalTok{(}\StringTok{"formula"} \OtherTok{=}\NormalTok{ diabetes }\SpecialCharTok{\textasciitilde{}}\NormalTok{ .),}
+    \AttributeTok{models =} \FunctionTok{list}\NormalTok{(}\AttributeTok{cart =}\NormalTok{ cart\_spec, }\AttributeTok{rf =}\NormalTok{ rf\_spec)}
+\NormalTok{  )}
+\NormalTok{all\_workflows}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A workflow set/tibble: 2 x 4
+##   wflow_id     info             option    result    
+##   <chr>        <list>           <list>    <list>    
+## 1 formula_cart <tibble [1 x 4]> <opts[0]> <list [0]>
+## 2 formula_rf   <tibble [1 x 4]> <opts[0]> <list [0]>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{all\_workflows }\OtherTok{\textless{}{-}} 
+\NormalTok{  all\_workflows }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{workflow\_map}\NormalTok{(}\AttributeTok{resamples =}\NormalTok{ train\_resamples, }\AttributeTok{verbose =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## i    No tuning parameters. `fit_resamples()` will be attempted
+\end{verbatim}
+
+\begin{verbatim}
+## i 1 of 2 resampling: formula_cart
+\end{verbatim}
+
+\begin{verbatim}
+## v 1 of 2 resampling: formula_cart (3.4s)
+\end{verbatim}
+
+\begin{verbatim}
+## i    No tuning parameters. `fit_resamples()` will be attempted
+\end{verbatim}
+
+\begin{verbatim}
+## i 2 of 2 resampling: formula_rf
+\end{verbatim}
+
+\begin{verbatim}
+## v 2 of 2 resampling: formula_rf (4s)
+\end{verbatim}
 
 \end{document}

@@ -4,6 +4,8 @@ author: 'Author: Steve Pittard wsp@emory.edu'
 date: 'Last update: 14 Oct 2021'
 output:
   word_document: default
+  html_document:
+    df_print: paged
   pdf_document: default
 output::html_notebook:
   toc: yes
@@ -13,11 +15,12 @@ output::html_notebook:
 ---
 
 ```{r echo=FALSE}
+suppressMessages(library(tidyverse))
 suppressMessages(library(tidymodels))
 ```
 
 
-Note you may use this in your work as long as it's not part of a commerical project. Any use should cite this notebook and author accordingly. 
+Note you may use this in your work as long as it's not part of a commercial project. Any use should cite this notebook and author accordingly. 
 
 ```{r eval=FALSE}
 https://cimentadaj.github.io/blog/2020-02-06-the-simplest-tidy-machine-learning-workflow/the-simplest-tidy-machine-learning-workflow/
@@ -39,13 +42,13 @@ What I hope you get out of this includes the following:
 
 Predictive Modeling is a type of Machine Learning which itself is a sub branch of Artificial Intelligence. The following graphic provides us with some history of these domains. This is helpful if you are trying to orient yourself in the world of analytics and machine learning. Note that AI has been around for quite some time. The Wikipedia definition of AI is:
 
-    The study of “intelligent agents”: any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals
+    The study of "intelligent agents": any device that perceives its environment and takes actions that maximize its chance of successfully achieving its goals
     
 I found the following image on Intel web page but can't remember where but I didn't generate it. Someone at Intel did. 
     
 ![](./IMG/intel.png)    
 
-Machine Learning relies upon “patterns and inference” to “perform a specific task without using explicit instructions”. It is a form of Applied AI that attempts to automatically learn from experience without being explicitly programmed. Think of Predictive Modeling as a subset of this which falls into two categories:
+Machine Learning relies upon "patterns and inference" to "perform a specific task without using explicit instructions". It is a form of Applied AI that attempts to automatically learn from experience without being explicitly programmed. Think of Predictive Modeling as a subset of this which falls into two categories:
 
 **Supervised**
 
@@ -70,8 +73,12 @@ This lecture is concerned primarily with Predictive Modeling. Some examples of P
 A typical workflow in support of predictive modeling might look this:
 
 ![](./IMG/worfflow.png)
+### Types of Models
 
-Also see 
+I'm grossly simplifying things here by jumping straight to predictive modeling as if that is the only type of model that matters when it is just one approach to understanding data. We could spend lots of time doing exploratory data analysis which is frequently done as part of, or before predictive modeling, since we might want to first understand possible relationships in our data. 
+
+Or we could treat it as an inferential problem wherein we make assumptions about the data and treat it like a statistical hypothesis wherein we implement statistical tests to determine effectiveness say relative to coefficients in a regression. We could have a very statistically rigorous model whose predictive power on new data might not be "good". We could also have a model whose predictive power on new data is "good" but not so statistically. This can be a trade off. I'm not going to spend a lot of time here comparing the two approaches but they each have their own considerations.  
+
 
 https://raw.githubusercontent.com/dataprofessor/infographic/master/01-Building-the-Machine-Learning-Model.JPG
 
@@ -81,7 +88,7 @@ The goal of predictive model is to generate models that can generalize to new da
 
 **Performance Metrics**
 
-For either case (regression vs classification) we need some type of metric or measure to let us know how well a given model will work on new or unseen data - also known as “out of sample” data. for Classification problems we look at things like “sensitivity”, “specificity”, “accuracy”, and “Area Under Curve”.
+For either case (regression vs classification) we need some type of metric or measure to let us know how well a given model will work on new or unseen data - also known as "out of sample" data. for Classification problems we look at things like "sensitivity", "specificity", "accuracy", and "Area Under Curve".
 
 For Quantitative outcomes, we look at things like Root Mean Square Error (RMSE) or Mean Absolute Error (MAE). Here is the formula for Root Mean Square Error (RMSE). P represents a vector of predictions and O represents a vector of the observed (true) values.
 
@@ -90,7 +97,7 @@ For Quantitative outcomes, we look at things like Root Mean Square Error (RMSE) 
 
 ## The "Old Way" - Using Base R and addons
 
-While 'old" sounds somewhat negative, there is absolutely nothing wrong using an established approach to model data using Base R. This involves applying specific packages to build, for example, a logistic regression model, a decision tree, or a support vector machine. 
+While **old** sounds somewhat negative, there is absolutely nothing wrong using an established approach to model data using Base R. This involves applying specific packages to build, for example, a logistic regression model, a decision tree, or a support vector machine. 
 
 The job involves identifying the appropriate package(s) and then dividing the data up in to training and testing pairs after which a function name is called to do the work. 
 
@@ -103,7 +110,7 @@ At a minimum, one must specify 1) the training data set and 2) a formula which i
 
 ### An Example
 
-Let's run through an example using the infamous **Pima Indians** dataset to predict whether a car has an automatic transmission (0) or a manual transmission (1). First, let's chop up the data into a training and test pair. To get the ball rolling with a practical case, let’s consider the Pima Indians Data Frame. Read in a copy.
+Let's run through an example using the infamous **Pima Indians** data set to predict whether someone is diabetic or not. First, let's chop up the data into a training and test pair. Read in a copy.
 
 ```{r}
 url <- "https://raw.githubusercontent.com/steviep42/bios534_spring_2020/master/data/pima.csv"
@@ -183,9 +190,9 @@ legend("topright",
 
 ## Splitting Data For Model Building
 
-At this point we want to build a model to predict whether a given observation will be positive for diabetes (or negative). 
+At this point we want to build a model to predict whether a given observation will be positive for diabetes or negative.
 
-What we will do is create a training and testing data set using the **sample** function. Here we will carve out rouhgly 80% of the data for training and 20% for testing. 
+What we will do is create a training and testing data set using the **sample** function. Here we will carve out roughly 80% of the data for training and 20% for testing. 
 
 
 ![](./IMG/split.png)
@@ -209,7 +216,7 @@ print(paste("Testing data has",nrow(pm_testing),"rows"))
 
 ## A First Model
 
-Let's build a model using the Generalized Linear Models function. Note that there are other types of functions we could use but most people have at least heard of Logistic Regression so let's start with that as it also provides us the opporunity to understand some basic ML concepts. 
+Let's build a model using the Generalized Linear Models function. Note that there are other types of functions we could use but most people have at least heard of Logistic Regression so let's start with that as it also provides us the opportunity to understand some basic ML concepts. 
 
 The **glm** function is part of Base R so you don't need to load any additional packages to use it. We need to specify a formula, some training data, and a "family" argument. 
 
@@ -233,7 +240,7 @@ We could do some "feature filtering" or "engineering" to first transform or remo
 
 Let's pretend that all is well and now use this new model to predict outcomes using the test data set. Remember that we are attempting to predict a binary outcome - in this case whether the person is positive for diabetes or negative. 
 
-What we get back from the prediction object are probabilities for which we have to determine a threshold above which we would say the observation is “positive” for diabetes and, below the threshold, “negative”.
+What we get back from the prediction object are probabilities for which we have to determine a threshold above which we would say the observation is "positive" for diabetes and, below the threshold, "negative".
 
 ```{r}
 probs <- predict(myglm,
@@ -260,12 +267,12 @@ grid()
 
 ### Selecting The Correct Alpha
 
-The temptation is to select 0.5 as the threshold such that if a returned probability exceeds 0.5 then we classify the associated subject as being “positive” for the disease. But then this assumes that the probabilities are distributed accordingly. This is frequently not the case though it doesn’t stop people from using 0.5. Another way to view this is as follows. This graphic shows a “perfect” classifier which more or less matches the logit function above:
+The temptation is to select 0.5 as the threshold such that if a returned probability exceeds 0.5 then we classify the associated subject as being "positive" for the disease. But then this assumes that the probabilities are distributed accordingly. This is frequently not the case though it doesn’t stop people from using 0.5. Another way to view this is as follows. This graphic shows a "perfect" classifier which more or less matches the logit function above:
 
 ![](./IMG/c1.png)
 
 
-Note that this is a rare situation wherein there exists a clean separation between negative and positive cases. We could more lukely have something like this:
+Note that this is a rare situation wherein there exists a clean separation between negative and positive cases. We could more likely have something like this:
 
 ![](./IMG/c3.png)
 
@@ -296,9 +303,9 @@ table(predicted = mypreds,
       actual = pm_testing$diabetes)
 ```
 
-What we are doing is building a "Confusion Matrix" which can help us determine how effective our model is. From such a matrix table we can compute a number of “performance measures”, such as accuracy, precision, sensitivity, specificity and others, to help assess the quality of the model. In predictive modeling we are always interested in how well any given model will perform on “new” data.
+What we are doing is building a "Confusion Matrix" which can help us determine how effective our model is. From such a matrix table we can compute a number of "performance measures", such as accuracy, precision, sensitivity, specificity and others, to help assess the quality of the model. In predictive modeling we are always interested in how well any given model will perform on "new" data.
 
-There are some functions that can help us compute a confusion matrix. Because the variable we are trying to predict, (diabetes), is a two level factor, (“neg” or “pos”) we’ll need to turn our predictions into a comparable factor. Right now, it’s just a character string.
+There are some functions that can help us compute a confusion matrix. Because the variable we are trying to predict, (diabetes), is a two level factor, ("neg" or "pos") we’ll need to turn our predictions into a comparable factor. Right now, it’s just a character string.
 
 ```{r}
 caret::confusionMatrix(mypreds,pm_testing$diabetes)
@@ -321,9 +328,9 @@ fourfoldplot(caret::confusionMatrix(newpreds,pm_testing$diabetes)$table)
 
 ### Performance Measures Revisited
 
-This is helpful stuff although there are a number of measures to select as a primary performance metric. Ideally, we would already know which performance metric we would select to effectively “judge” the quality of our model. 
+This is helpful stuff although there are a number of measures to select as a primary performance metric. Ideally, we would already know which performance metric we would select to effectively "judge" the quality of our model. 
 
-In medical tests, "sensitivity" and "specificity" are commonly used. Some applications use “Accuracy” (which isn’t good when there is large group imbalance).
+In medical tests, "sensitivity" and "specificity" are commonly used. Some applications use "Accuracy" (which isn’t good when there is large group imbalance).
 
 The problem here is that all we have done is looked at the confusion matrix corresponding to one specific (and arbitrary) threshold value when what we need is to look at a number of confusion matrices corresponding to many different thresholds. 
 
@@ -331,7 +338,7 @@ For example, we might get a better sensitivity level had we selected the mean of
 
 ### The ROC Curve
 
-One way to do this is to use something known as the ROC curve. Luckily, R has functions to do this. This isn’t surprising as it is a standard tool that has been in use for decades long before the hype of AI and ML was around. The ROC curve gives us a “one stop shop” for estimating a good value of alpha.
+One way to do this is to use something known as the ROC curve. Luckily, R has functions to do this. This isn’t surprising as it is a standard tool that has been in use for decades long before the hype of AI and ML was around. The ROC curve gives us a "one stop shop" for estimating a good value of alpha.
 
 We want to maximize the area under a given ROC curve as it winds up being an effective way to judge the differences between one method and another. So, if we wanted to compare the glm model against a Random Forest model, we could use the respective AUC (Area Under Curve) metric to help us. This isn’t the only way to do this but it’s reasonable for now.
 
@@ -355,7 +362,7 @@ abline(a = 0, b = 1)
 grid()
 ```
 
-So what value of alpha corresponds to the statedAUC of .85 ? We’ll have to dig into the performance object to get that but it looks to be between 0.30 and 0.40. Note that this is somewhat academic since knowing the max AUC alone helps us decide if our model is any “good”. For completeness we could use another R function to nail this down:
+So what value of alpha corresponds to the statedAUC of .85 ? We’ll have to dig into the performance object to get that but it looks to be between 0.30 and 0.40. Note that this is somewhat academic since knowing the max AUC alone helps us decide if our model is any "good". For completeness we could use another R function to nail this down:
 
 ```{r}
 proc <- pROC::roc(pm_testing$diabetes,probs)
@@ -365,15 +372,15 @@ round(pROC::coords(proc, "b", ret="t", transpose = FALSE),2)
 Before we leave this example we could have also used the ROCR::performance function to help us answer this question (See https://www.thetopsites.net/article/50636333.shtml)
 
 ```{r}
-plot(unlist(performance(pred, "sens")@x.values), 
-     unlist(performance(pred, "sens")@y.values), 
+plot(unlist(ROCR::performance(pred, "sens")@x.values), 
+     unlist(ROCR::performance(pred, "sens")@y.values), 
      type="l", lwd=2, ylab="Sensitivity", xlab="Cutoff",
      main="Optimal Cutoff To Balance Sens and Spec")
 
 par(new=TRUE)
 
-plot(unlist(performance(pred, "spec")@x.values), 
-     unlist(performance(pred, "spec")@y.values), 
+plot(unlist(ROCR::performance(pred, "spec")@x.values), 
+     unlist(ROCR::performance(pred, "spec")@y.values), 
      type="l", lwd=2, col='red', ylab="", xlab="")
 axis(4, at=seq(0,1,0.2),labels=as.character(seq(0,1,0.2)))
 mtext("Specificity",side=4, padj=-2, col='red')
@@ -405,14 +412,14 @@ A way to combat this is to split the data into K number of groups aka "folds" - 
 
 It also means that each fold also gets used as part of a trained model thus we can offset the impact of any outliers found in the data set. Note, we are not trying to perfectly model the data, we just want to get a realistic idea as to how it might perform on unseen data. 
 
-The method works by giving us multiple estimates of out-of-sample error, rather than a single estimate. Let's assume K is equal to 3 so we will partition our data into 3 individual “folds”" which are basically equal in size. Then we’ll create a loop that does the following:
+The method works by giving us multiple estimates of out-of-sample error, rather than a single estimate. Let's assume K is equal to 3 so we will partition our data into 3 individual "folds" which are basically equal in size. Then we’ll create a loop that does the following:
 
     Combines 2 of the folds into a training data set
     Builds a model on the combined 2-folds data
     Applies the model to holdout fold
     Computes the AUC value and stores it
 
-Each fold is simply a portion of the data. We’ll generate a list called “folds” that contains 3 elements each of which are 256 index elements corresponding to rows in pm. The way we did the sample insures that each row shows up only in one fold.
+Each fold is simply a portion of the data. We’ll generate a list called "folds" that contains 3 elements each of which are 256 index elements corresponding to rows in pm. The way we did the sample insures that each row shows up only in one fold.
 
 ![](./IMG/crossfold.png){width=120%}
 
@@ -710,6 +717,8 @@ The **tidymodels** package can be useful even if you are just experimenting sinc
 
 One of the benefits of the package is that it provides front ends for the many methods available in R which includes Decision trees and extensions there upon. An advantage of Base R when building models is that many methods will convert the target variable to a label / nominal feature without you asking it to. This is a convenience though the tidyverse generally wants you do be explicit about this. 
 
+### Read in the data 
+
 ```{r}
 url <- "https://raw.githubusercontent.com/steviep42/bios534_spring_2020/master/data/pima.csv"
 pm <- read.csv(url)
@@ -717,8 +726,6 @@ pm <- read.csv(url)
 pm <- pm %>% mutate(diabetes=factor(diabetes))
 skimr::skim(pm)
 ``` 
-
-
 
 ### A First tidymodel
 
@@ -732,6 +739,8 @@ pm_tidy_glm <- logistic_reg(mode = "classification") %>%
   set_engine("glm") 
 ```
 
+We can print out the contents of this object just by typing it although there isn't much happening right now.
+
 ```{r}
 pm_tidy_glm
 ```
@@ -742,6 +751,9 @@ Tp get more info:
 pm_tidy_glm %>% translate()
 ```
 
+### Fitting the Model
+
+So now we can fit the model as part of the pipeline. Notice how tidymodels is designed to be totally congruent with the tidyverse. 
 
 ```{r}
 pm_tidy_glm_fit <- logistic_reg(mode = "classification") %>%
@@ -749,33 +761,32 @@ pm_tidy_glm_fit <- logistic_reg(mode = "classification") %>%
   fit(diabetes ~ ., data = pm_training)
 ```
 
+So we get back a **parsnip** object which, using the copy from the **parsnip** package documentation is:
 
-What do we get back?
+"The goal of **parsnip** is to provide a tidy, unified interface to models that can be used to try a range of models without getting bogged down in the syntactical minutiae of the underlying packages". 
+
 
 ```{r}
 pm_tidy_glm_fit
 ```
 
-In terms of making a prediction, we can do that easily. The **predict** function is what we call a generic function in R which understands how to do its work based on the type of object and data that it is being given. Remember that we built a model which returned an object. We can pass that to the **predict** function:
+
+So this is where we could drop down into an inferential way of thinking and figure out if the coefficients in the model are statistically meaningful. But we'll skip over that for now.
+
+In terms of making a prediction, the **predict** function is what we call a generic function in R which understands how to do its work based on the type of object and data that it is being given. Remember that we built a model which returned an object. We can pass that to the **predict** function:
 
 ```{r}
 glance(pm_tidy_glm_fit)
 ```
-
+Make the actual prediction on the testing data. We also pass in the **type == "class"** argument since are dealing with classification and, in this case, wish to get labels back.
 
 ```{r}
-# Use the ranger model to make a prediction
+# Get predicted labels back
 test_preds <- predict(pm_tidy_glm_fit,pm_testing,type="class")
 test_preds[1:10,]
 ```
 
-Note that we also have access to probabilities which could be useful if we needed to generate a ROC curve or wanted to take finer grained control over thresholds.
-
-```{r}
-predict(pm_tidy_glm_fit,
-        pm_testing,type="prob")[1:10,]
-```
-
+### Managing Predictions
 
 By default we get back some predictions as to whether a subject is positive or negative for diabetes which we could then compare to the actual values. This would allow us to create a confusion matrix that would then permit the computation of various performance measures such as accuracy, sensitivity, specificity, etc.
 
@@ -800,7 +811,7 @@ pm_tidy_glm_fit %>%
   my_metrics(truth=diabetes, estimate=.pred_class,event_level = "second")
 ```
 
-So we could derive all the metrics directly from the confusion matrix - if we wanted to
+We could also derive all the metrics directly from the confusion matrix - if we wanted to
 
 ```{r}
 pm_tidy_glm_fit %>%
@@ -812,7 +823,7 @@ pm_tidy_glm_fit %>%
 
 But we don't need to do this as tidymodels has its own way of getting multiple metrics all at once or a subset thereof:
 
-```{r}
+```{r binsearch}
 pm_tidy_glm_fit %>%
   predict(pm_testing) %>%
   bind_cols(pm_testing) %>%
@@ -831,7 +842,24 @@ pm_tidy_glm_fit %>%
   
 ```
 
-And what about drawing ROC curves? The tidymodels package has that covered. We just have to remember to get the probabilities associated with the prediction instead of the labels. 
+The flexibility of tidymodels can be confusing although if you first determine what your metric(s) for success will be BEFORE building a model then the job becomes easier. 
+
+### ROC Curves
+
+And what about drawing ROC curves? The tidymodels package has that covered. We just have to remember to get the probabilities associated with the prediction instead of the labels. Getting the probabilities is as easy as providing the keyword "probabilities: to the "type" argument. 
+
+
+```{r}
+pm_tidy_glm_fit %>%
+  predict(pm_testing,type="prob")
+```
+
+Using this information we can now:
+
+1) Predict using probabilities using the test data
+2) Binding that info to the test data
+3) Passing #2 into the **roc_curve** function (specify the correct "event level")
+4) Pass #3 into the **autoplot** function which figures out the appropriate graph
 
 ```{r}
 pm_tidy_glm_fit %>%
@@ -840,16 +868,19 @@ pm_tidy_glm_fit %>%
   roc_curve(truth=diabetes,estimate=.pred_pos,event_level="second") %>%
   autoplot()
 ```
+
 We can improve upon the default plot. First, we'll get the auc value to use in our labels. Then we'll use this information along with various ggplot functions. 
 
 ```{r}
-# Get the AUC
+# Get the AUC by using the **roc_auc** function
 pm_tidy_glm_roc_auc <- pm_tidy_glm_fit %>%
   predict(pm_testing,type="prob") %>%
   bind_cols(pm_testing) %>%
   roc_auc(truth=diabetes,estimate=.pred_pos,event_level="second")
 
-# Put up an annotated plot
+# Put up an annotated plot using ggplot directly for more flexibility
+# in labeling
+
 pm_tidy_glm_fit %>%
   predict(pm_testing,type="prob") %>%
   bind_cols(pm_testing) %>%
@@ -864,7 +895,7 @@ pm_tidy_glm_fit %>%
 
 ### Engine Selection
 
-Let's take a step back into the definition of the model to learn a little more about what is happening at a basic level. So we wanted to do logistic regression wich can be done as follows:
+Let's take a step back into the definition of the model to learn a little more about what is happening at a basic level. So remember that we wanted to do logistic regression which can be done as follows:
 
 ```{r}
 logistic_reg() %>% translate()
@@ -935,7 +966,7 @@ testing(pm_split)[1:10,]
 
 ### Using the Split Data
 
-Let's repeat our glm model on the new training data. We don't expect much difference. This is just illustrating how we can take advantage of **tidymodels** functions to help us. 
+Let's repeat our glm model on the new training data. We don't expect much difference. This is just illustrating how we can take advantage of **tidymodels** data splitting functions to help us. 
 
 ```{r}
 # Get the Training data
@@ -989,7 +1020,7 @@ pm_folds$splits[[1]][["data"]][1:5,]
 ```
 
 
-Let's repeat our exercise with fitting a model using the folds. While we are at it, we will collect the mean accuracy and roc_auc for this experiment.
+Let's repeat our exercise with fitting a model using the folds. While we are at it, we will collect the mean accuracy and roc_auc for this experiment. Understand that we are computing an average accuracy and AUC across the folds. Remember that in cross fold validation we are chopping up the training data into some number of folds - in this case 6. So each time we wish to build and evaluate a model, one of the six folds is held out as testing data while the remaining 5 are used to train the data. It's like a for loop although we don't have to program that ourselves like we did previously. 
 
 ```{r}
 logistic_reg(mode = "classification") %>%
@@ -1000,7 +1031,8 @@ logistic_reg(mode = "classification") %>%
 ```
 ## Workflows
 
-Workflows allow us to consolidate a number of steps into a definition. From the manual:
+It is possible to organize a number of steps into a workflow as a form of abstraction. 
+From the manual:
 
 A workflow is an object that can bundle together your pre-processing, modeling, and post-processing requests. For example, if you have a recipe and parsnip model, these can be combined into a workflow. The advantages are:
 
@@ -1008,14 +1040,14 @@ A workflow is an object that can bundle together your pre-processing, modeling, 
 
     The recipe prepping and model fitting can be executed using a single call to fit().
 
-Lets define a model as before
+So lets define a model as before. You've seen this before so this should not be new to you. 
 
 ```{r}
 pm_tidy_glm <- logistic_reg(mode = "classification") %>%
   set_engine("glm") 
 ```
 
-Next we will create a workflow to contain it. We can also add in other things than just models but let's keep it simple for now.
+Next we will create a workflow to contain it. We can also add in other things than just models but let's keep it simple for now. Here we will add a formula and a model into a workflow. 
 
 ```{r}
 pm_workflow <- workflow() %>%
@@ -1030,7 +1062,7 @@ Check it out:
 pm_workflow
 ```
 
-Before we do anything with it, I wanted to point out that you could update specific components of an existing wrokflow. This is helpful if our workflow defintition has lots of individual components to it. In this case we do not have that many but this is a good time to point out the advantage of being able to update a workflow.
+Before we do anything with it, I wanted to point out that you could update specific components of an existing workflow. This is helpful if our workflow definition has lots of individual components to it. In this case we do not have that many but this is a good time to point out the advantage of being able to perform an update. So let's change the existing formula to something new. 
 
 ```{r}
 update_formula(pm_workflow,diabetes~mass)
@@ -1051,7 +1083,7 @@ predict(pm_workflow_fit,pm_testing) %>%
   my_metrics(truth=diabetes, estimate=.pred_class,event_level="second") 
 ```
 
-This could be done in one go if desired. Those facile with tidy commands might prefer this although you are encouraged to keep things simple if you wish. You can break up the pipeline into segments wherein you save information along the way. 
+This could be done in one go if desired. Those facile with tidy commands might prefer this although you are encouraged to keep things simple and readable. You can break up the pipeline into segments wherein you save information along the way if you want others to be able to easily follow your steps. This is up to you but sometimes having long pipelines can be hard to follow.
 
 ```{r}
 workflow() %>%
@@ -1078,7 +1110,7 @@ pm_workflow <- workflow() %>%
 ```
 
 
-So if we wanted to train the model on a set of folds how would we do that? Where would we specify it in the workflow? First, we can create the folds using the following:
+So if we wanted to train the model on a set of folds how would we do that? Where would we specify it in the workflow? First, we can create the folds using the following. You've seen this before.
 
 ```{r}
 # Create 6 folds
@@ -1114,14 +1146,13 @@ The way this works is that we:
 
 1) Create a recipe
 2) Prep the recipe
-3) Bake the prepped reciple using some data 
+3) Bake the prepped recipe using some data 
 
 There are two different types of operations that can be sequentially added to a recipe. Steps can include common operations like scaling a variable, creating dummy variables or interactions and so on. More computationally complex actions such as dimension reduction or imputation can also be specified. 
 
 Checks are operations that conduct specific tests of the data. When the test is satisfied, the data are returned without issue or modification. Otherwise, any error is thrown.
 
-Here we define a recipe that indicates what it is we are predicting. We could more granularly define the 
-types of features we have which might mean designating factors. 
+Here we define a recipe that indicates what it is we are predicting. We could more granularly define the types of features we have which might mean designating factors. 
 
 ```{r}
 recipe(diabetes~.,data=training(pm_split)) %>% summary()
@@ -1138,7 +1169,7 @@ pm_recipe_prepped <- recipe(diabetes ~ .,data=training(pm_split)) %>%
 pm_recipe_prepped
 ```
 
-But the recipe itself is just that - a document of intention for something to be prepped (which we just do) and later "baked" into usable data. 
+But the recipe itself is just that - a document of intention for something to be prepped (which we just did) and later "bake" into usable data. 
 
 ```{r}
 pm_training_baked <- pm_recipe_prepped %>%
@@ -1146,7 +1177,9 @@ pm_training_baked <- pm_recipe_prepped %>%
 
 glimpse(pm_training_baked)
 ```
-Similarly, if we want the testing data to have the same pre-processing we need to bake it using the prepped recipe. Note that the scaling is determined by the training to avoid data leakage when the  
+
+Similarly, if we want the testing data to have the same pre-processing we need to bake it using the prepped recipe. Note that the scaling is determined by the training to avoid data leakage.
+
 
 ```{r}
 pm_testing_baked <- pm_recipe_prepped %>%
@@ -1157,7 +1190,7 @@ pm_testing_baked
 
 We can consolidate the creation of a model along with the recipe used to pre-process data into a **workflow**. To review, here is our recipe minus the prep and a formula definition.
 
-First, here is our recipe. We are just scratching the surface here. We could also do things like removing highly correlated variables and/or reduce the dimensionality of the data via PCA using **step** functions. For purposes of explanation, we will keep it simple and hust do the centering and scaling.
+First, here is our recipe. We are just scratching the surface here. We could also do things like removing highly correlated variables and/or reduce the dimensionality of the data via PCA using **step** functions. For purposes of explanation, we will keep it simple and just do the centering and scaling.
 
 ```{r}
 pm_recipe <- training(pm_split) %>%
@@ -1210,7 +1243,7 @@ pm_tidy_rf <- rand_forest(mtry = 5, trees = 200) %>%
   set_engine("randomForest")
 ```
 
-Now we can update the workflow with a new model and complete the fit and predict in one go. This example is a little small but imagine if our workflow had lengthy recipe and model definitions. We don't have to redefine it, we just update an existing one. 
+Now we can update the workflow with the new model and complete the fit and predict in one go. This example is a little small but imagine if our workflow had a lengthy recipe and model definitions. We don't have to redefine it, we just update an existing one. 
 
 ```{r}
 pm_workflow %>%
@@ -1228,7 +1261,7 @@ Many times the models we wish to create have a number of parameters that can be 
 
 This means that the number of desired trees can be set *before* the method is implemented. In fact, the model can be repeated using different values of the number of desired trees, to see if an optimal result can be achieved.  
 
-We call this (hyper)parameter tuning which is soemthing that tidymodels will do for us. In effect we are optimizing a desginated performance metric (e.g. accuracy, precision, recall) using parameters. Random Forests have other hyperparameters which could also be set such as the minimum number of cases that must reside in a node. Hyperparameters can be tuned together or separately. 
+We call this (hyper)parameter tuning which is something that tidymodels will do for us. In effect we are optimizing a designated performance metric (e.g. accuracy, precision, recall) using parameters. Random Forests have other hyperparameters which could also be set such as the minimum number of cases that must reside in a node. Hyperparameters can be tuned together or separately. 
 
 In the example below we will create a model specification that indicates our desired method (random forest) along with the hyperparameters we wish to tune as part of our fit process. 
 
@@ -1243,7 +1276,7 @@ tune_spec <-
 ```
 
 
-So we update the workflow to yuse the tuning specification
+So we update the workflow to use the tuning specification
 
 ```{r}
 man_tune <- pm_workflow %>% 
@@ -1281,7 +1314,7 @@ man_final
 ```
 
 We could set up a more extensive grid that automatically generates values according to a regular
-pattern. This will consume more CPU time but it could investiage a larger parameter space. 
+pattern. This will consume more CPU time but it could investigate a larger parameter space. 
 
 ```{r}
 tune_spec <- 
@@ -1295,8 +1328,7 @@ tree_grid <- grid_regular(cost_complexity(),tree_depth(),
 tree_grid
 ```
 
-Now, we fit the model over a range of parameters after we update the workflow to use the new tuning 
-specification:
+Now, we fit the model over a range of parameters after we update the workflow to use the new tuning specification:
 
 ```{r}
 res <- pm_workflow %>% 
@@ -1345,7 +1377,7 @@ test_set <- testing(split)
 ```
 
 
-Let's pick methods other than logistic regression, Let's do a Decison Tree and a random forests
+Let's pick methods other than logistic regression, Let's do a Decision Tree and a random forests
 
 
 ```{r}
